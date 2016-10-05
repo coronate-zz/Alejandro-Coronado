@@ -1,5 +1,1 @@
-# Alejandro-Coronado
-Algunos Documuentos
-R 
-R Markdown
-adadad
+Repositorio R
