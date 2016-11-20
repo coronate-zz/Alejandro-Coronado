@@ -1,0 +1,867 @@
+---
+title: "Mineria de Datos - Proyecto Final"
+author: "Alejandro Coronado"
+date: "17 de noviembre de 2016"
+output: html_document
+---
+
+library('ggplot2')
+library('ggplot2')
+
+#Proyecto Final 
+Resolver los ejercicios vistos en clase.
+
+##An?lisis Descriptivo
+
+En esta secci?n se resuelven algunos probelmas que se presnetan cuando limpiamos bases de datos y queremos hacer uns descripcion de las relacion entre nuestras variables.
+
+* GGplot
+* tema2
+* tema3
+
+
+
+###GGplot 
+
+Cargando Librerias:
+```{r, nclude=FALSE, cache=FALSE, warning=FALSE, eval=FALSE }
+
+ library('lubridate')
+ library( 'magrittr')
+ library( 'ggvis')
+ library( 'dplyr')
+ library( 'tidyr')
+ library( 'readr')
+ library('rvest')
+ library( 'ggplot2')
+ library('stringr')
+ library('ggthemes')
+ library('googleVis')
+ library('shiny')
+ library( 'tibble')
+ library( 'vcd')
+ library('vcdExtra')
+ library( 'GGally')
+ library( 'readODS')
+#library( 'readxl')
+ library("RSQLite" )
+ library('ggplot2movies')
+
+```
+
+###Boston Data Set
+
+**Ejercicio 1**
+
+1. Grafica `medv` usando `boxplot`, `stripchart` (*jittered dotplot*), `stem`, `density` estimate con  `rug` plot
+
+```{r}
+
+
+p<-ggplot(MASS::Boston, aes(medv)) 
+
+p + geom_histogram() + ylab("") + xlab("Valor medio de las casas (1000s USD)")
+#Density Chart con Rug
+p +  geom_density() + geom_rug()+  ylab("") + xlab("Valor medio de las casas (1000s USD)")
+#Stem chart
+p +  geom_bar() + ylab("") + xlab("Valor medio de las casas (1000s USD)")
+
+
+#Boxplot
+p<-ggplot(MASS::Boston, aes( 'Valor medio de las casas', medv ))
+p +  geom_boxplot() + ylab("") + xlab("Valor medio de las casas (1000s USD)")
+#Stripchart
+p +  geom_jitter() + ylab("") + xlab("Valor medio de las casas (1000s USD)")
+
+
+
+```
+
+
+
+¿Qué observas en cada una de estas gráficas?
+* La primera grafica geom_histogram nos da una idea de las distribucion del valor medio de las casas en el dataSet. Vemos que la mayor concentración de precios esta en 20,000 dolares.
+* Geom_density confirma la distribución del valor medio de las casas y vemos que estos precios se comportan casi como una distribución normal
+* geom_bar es similar a geom_histogram pero ahora los datos no se encuentran agrupados en intervalos sino que cada uno es represnetado por su propio valor.
+* geom_boxplot Nos muestra que la media de los datos esta en 20,000 dolares y que la mayor concentración de la infromación esta en esta zona. Asimismo nos muestra que tenemos varios outliers con casas con valores muy altos.
+*geom_jitter nos muestra la distribución de los datos en una grafica de puntos donde cada punto representa el valor de cada casa. Se crea una distorción minima para evitar que los datos hagan overlapping.
+
+¿Qué observas en cada una de estas gráficas?
+
+2. En la gráfica de las 14 variables mostrada arriba ¿Cómo describirías las distribuciones? 
+  ¿Para cuales variables sería mejor utilizar `boxplot`? ¿Por qué?
+
+  
+Usando Boxplot queremos tener una mejor intuición sobre la distribución de los datos asi como como conocer la media y excluir los datos atipicos. Las variables de tax, nox e indus son buenos candidatos para este analisis data su stribución asimétrica. Es dificil saber sobre que valores se encuentran concentrdos estos datos, cual es su media y es muy psible que tengamos observaciones atípicas.
+
+**Ejercicio 2** 
+###Movies Data Set
+1. ¿Qué puedes decir de esta gráfica?
+
+
+
+```{r,  warning=FALSE}
+ggplot(ggplot2movies::movies, aes(x=length)) + 
+    xlim(0, 180) +
+    geom_histogram(binwidth = 1) +
+    xlab("Duración de películas en minutos") + ylab("") 
+```
+
+
+
+Tenemos dos concentraciones en los datos, una alrededor de los 15 minutos y otra cerca de los 80, 90 minutos. Esto sucede porque estamos considerando dos tipos de peliculas los corto metrajes y las producciones de pelicula. Cada distribucion parece ser normal con diferente media y una varianza mayor en el tipo peliculas.
+2. ¿Cómo la modificas para agregar más *ticks*?
+Usando breaks=seq(0, 150, by=.5) dentro de geom_histogram
+
+```{r,  warning=FALSE}
+ggplot(ggplot2movies::movies, aes(x=length)) + 
+    xlim(0, 180) +
+    geom_histogram(breaks=seq(0, 150, by=.5)) +
+    xlab("Duración de películas en minutos") + ylab("")  
+    #scale_x_continuous(breaks = seq(0,180,10))
+
+```
+
+
+3. Haz una gráfica que muestre que los picos a los 7 y 90 minutos existían antes y después de 1980
+
+Se proponen diferentes soluciones usando colour, facet_grid y filtros.
+
+```{r,  warning=FALSE}
+data<-ggplot2movies::movies
+data['is1980']<-data$year>1980
+p=ggplot(data,   aes(x=length, colour=is1980))  
+    p  + xlim(0, 180) + geom_histogram(binwidth = 1)  +xlab("Duración de películas en minutos despues de 1980") + ylab("")
+    
+p=ggplot(data, aes(length))
+    p+ geom_bar() + xlim(0, 180) +  facet_grid(~ is1980 )
+    
+p=ggplot(data, aes(length, fill=factor(year)))
+    p+ geom_bar() +  xlim(0, 180) 
+
+p=ggplot(subset(data, year>=1980), aes(x=length))  
+    p + xlim(0, 180) + geom_histogram(binwidth = 1) + xlab("Duración de películas en minutos despues de 1980") + ylab("") 
+pp=ggplot(subset(ggplot2movies::movies, year<1980), aes(x=length))  
+    pp + xlim(0, 180) + geom_histogram(binwidth = 1) + xlab("Duración de películas en minutos antes de 1980") + ylab("") 
+
+```
+
+
+
+4. Existe la variable `Short` que indica si la película es "corta" ¿Qué gráfica puedes  hacer para
+   ver que criterio se utilizó para definir esta variable y cuáles están mal clasificadas?
+Para hacer un pequeño analisis primero obeservamos con colores las graficas mal clasificadas, despues utilizamos un filtro con condiciones. Queremos elegir las observaciones con short=1 pero cuya duración es mayor a 45 y las variables short=0 con duración menor a 45 minutos. 
+
+```{r,  warning=FALSE}
+data<-ggplot2movies::movies
+x2<-seq(1, 58788)
+
+
+p=ggplot(ggplot2movies::movies,   aes(length, fill=factor(Short)))  
+    p + xlim(0, 200)+ ylim(0, 200) + geom_bar() +  xlab("Pelicula ID") + ylab("Duracion de la pelicula") 
+
+p=ggplot(ggplot2movies::movies,   aes(x=x2, y=length, colour=Short))  
+    p + xlim(0, 58788)+ ylim(0, 200) + geom_point() +  xlab("Pelicula ID") + ylab("Duracion de la pelicula") 
+
+p=ggplot(subset(ggplot2movies::movies, Short>0 & length>45), aes( x=year, y=length,  label=as.character(title)))  
+     p + xlim(1900, 2006)+ ylim(0, 200) + geom_point() +  xlab("Pelicula año") + ylab("Duracion de la pelicula")  + geom_text(size=2)
+     
+
+p=ggplot(subset(ggplot2movies::movies, Short<=0 & length<45), aes( x=year, y=length, label=as.character(title)))  
+     p + xlim(1900, 2006)+ ylim(0, 200) + geom_point() +  xlab("Pelicula año") + ylab("Duracion de la pelicula")  + geom_text(size=2)
+
+```
+    
+
+
+
+** Ejercicio 3 **
+1. Agrega *alpha-blending* ¿Qué pasa con los  *outliers*? ¿Diferentes valores funcionan mejor?
+
+Cuando aumentamos el valor alpha vemos una mayor cantidad de puntos traslucidos señalandonos cuales valores podrian ser considerados outliers dado el criterio alpha
+```{r,  warning=FALSE}
+
+ggplot(ggplot2movies::movies, aes(votes, rating, alpha=.005)) + geom_point() + ylim(1,10)
+
+ggplot(ggplot2movies::movies, aes(votes, rating, alpha=.2)) + geom_point() + ylim(1,10)
+
+ggplot(ggplot2movies::movies, aes(votes, rating, alpha=70)) + geom_point() + ylim(1,10)
+```
+
+2. ¿Cómo se ve la gráfica si  remueves las películas con menos de 100 votos?
+Se eliminan valores extremos sobre las calificaciones y reduciomos el rango de y. Tambien es mas facil reconocer una distribución con concentración en los valores 5 y 7.5
+
+```{r,  warning=FALSE}
+data<-subset(ggplot2movies::movies,  votes>100)
+
+ggplot(data, aes(votes, rating, alpha=.3)) + geom_point() + ylim(1,10)+ xlim(0,2000)
+
+```
+
+3. ¿Cómo si remueves todas las películas que tienen un *rating* arriba de 9?
+La gráfica se parece a la anterior porque existen muchas películas con calificaciones muy altas pero que fueron calificadas por pocas personas. Cuando pocas personas califican entonces es probable que su calificación sea mayor a la que realmente deberia tener.
+
+```{r,  warning=FALSE}
+data<-subset(ggplot2movies::movies,  rating<9)
+
+ggplot(data, aes(votes, rating) ) + geom_point() + ylim(1,10)
+
+```
+
+###Cars93 Data Set
+**Ejercicio 4**
+
+- ¿Cuál es el *outlier* de la izquierda?
+
+```{r,  warning=FALSE}
+ggplot(MASS::Cars93, aes(Weight, MPG.city)) + geom_point() +
+    geom_smooth(colour="green") + ylim(0,50)
+```
+
+El outlier es Civic, el carro mas confiable que podrías tener.
+
+```{r,  warning=FALSE}
+ggplot(MASS::Cars93, aes(Weight, MPG.city, label=as.character(Model))) + geom_point() +
+    geom_smooth(colour="green") + ylim(0,50)+ geom_text()
+```
+
+
+
+###Boston Data Set
+**Ejercicio 5**
+
+```{r, fig.height=13, fig.width=13,   warning=FALSE}
+MASS::Boston %>%
+    select(-rad,-chas) %>%
+    ggpairs(title="Boston Dataset", diag=list(continuos='density', axisLabels='none'))
+```
+
+
+1. ¿Cuáles están positivamente correlacionadas con `medv`?
+rm, dis, black
+
+2. La variable `crim` (tasa de crímenes per cápita) tiene *scatterplots* con forma inusual,
+  donde los valores más altos de `crim` sólo ocurren para una valor de la otra variable
+  ¿Qué explicación le puedes dar?
+ 
+Los crimene se realizan en zonas especificas, si vemos la grafica de crim vs dis vermos que a una menor distancia encontramos amyor cantidad de crimenes percapita y una mayor concentracion de observaciones. Esto quiere decir que tenemos mayor crimenes y mayores observaciones en zonas cercanas a los centros (zonas) comerciales.
+Las zonas comerciales deben tener caracteristicas en comun como numero de habitaciones(edificios), mayor edad, menor proporcion de zonas residenciales.
+ 
+3. Hay varias formas en los *scatterplots*, escoge 5 y explica como las interpretas?
+
+
+* dis vs zn: Vemos que hay zonas residenciales concentradas en dos partes, unas relativamente cerca de los centros comerciales y otra mucho mas alejada de los centros comerciales tal vez son las zonas residenciales.
+* dis vs rm: meintras aumenta la distancia las personas pueden pagar casas con mayor numero de cuartos. Esto sucede porque los terrenos son mas baratos cuando están lejos de las zonas comerciales.
+* nox vs indus: entre mayor sea la cantidad de non-reatail commerce mayor es la concentraciòn de contaminantes esto puede explicarse si los comercios de non-retail son productores o fabricas.
+* age vs nox: Las zonas con mayor edad tambien son las zonas con mayor cantidad de non-retail commerce. Esto podría confirmar nuestro supuesto de que se tratan de zonas insdutriales y por lo tanto fueron establecidas mucho antes que las zonas comerciales o residenciales.
+
+
+**Ejercicio 6**
+
+- Usando el `Boston` *dataset* realice un `pcp`. Trate de resaltar las características que ha observado en los 
+ejercicios anteriores. Piensa como le hiciste
+
+```{r}
+data<-MASS::Boston
+data['grupos']<-cut_interval(data$medv, 4)
+ggparcoord(data, columns = 1:7, groupColumn = "grupos", scale='center')
+```
+
+
+**Ejercicio 7**
+
+Crea en tu carpeta las carpetas `german` y `algas`, dentro de ellas crea los archivos 
+`00-load.R`, `01-prepare.R` y `02-clean.R` y `run.R`
+En estos archivos pondrás, respectivamente el código para ejecutar los *pipelines* siguientes de los 
+casos de estudio.
+
+
+
+
+
+##German Data Set
+
+Primero debemos cargar los metadata para poder trabajar con los nombre de las columnas y decodificar nuestros datos
+
+```{r}
+## German credit ---------------------------------------------------------------
+
+## Nombres de columnas ---------------------------------------------------------
+german_colnames <- c('Status of existing checking account',
+                     'Duration in month',
+                     'Credit history',
+                     'Purpose',
+                     'Credit amount',
+                     'Savings account/bonds',
+                     'Present employment since',
+                     'Installment rate in percentage of disposable income',
+                     'Personal status and sex',
+                     'Other debtors / guarantors',
+                     'Present residence since',
+                     'Property',
+                     'Age in years',
+                     'Other installment plans',
+                     'Housing',
+                     'Number of existing credits at this bank',
+                     'Job',
+                     'Number of people being liable to provide maintenance for',
+                     'Telephone',
+                     'foreign worker',
+                     'good_loan'
+)
+
+## Códigos ---------------------------------------------------------------------
+german_codes <- list('A11'='... < 0 DM',
+                     'A12'='0 <= ... < 200 DM',
+                     'A13'='... >= 200 DM / salary assignments for at least 1 year',
+                     'A14'='no checking account',
+                     'A30'='no credits taken/all credits paid back duly',
+                     'A31'='all credits at this bank paid back duly',
+                     'A32'='existing credits paid back duly till now',
+                     'A33'='delay in paying off in the past',
+                     'A34'='critical account/other credits existing (not at this bank)',
+                     'A40'='car (new)',
+                     'A41'='car (used)',
+                     'A42'='furniture/equipment',
+                     'A43'='radio/television', 'A44'='domestic appliances', 'A45'='repairs',
+                     'A46'='education', 'A47'='(vacation - does not exist?)',
+                     'A48'='retraining', 'A49'='business', 'A410'='others', 'A61'='... < 100 DM',
+                     'A62'='100 <= ... < 500 DM', 'A63'='500 <= ... < 1000 DM',
+                     'A64'='.. >= 1000 DM', 'A65'='unknown/ no savings account',
+                     'A71'='unemployed', 'A72'='... < 1 year', 'A73'='1 <= ... < 4 years',
+                     'A74'='4 <= ... < 7 years', 'A75'='.. >= 7 years', 'A91'='male : divorced/separated',
+                     'A92'='female : divorced/separated/married',
+                     'A93'='male : single',
+                     'A94'='male : married/widowed',
+                     'A95'='female : single',
+                     'A101'='none',
+                     'A102'='co-applicant',
+                     'A103'='guarantor', 'A121'='real estate',
+                     'A122'='if not A121 : building society savings agreement/life insurance',
+                     'A123'='if not A121/A122 : car or other, not in attribute 6',
+                     'A124'='unknown / no property',
+                     'A141'='bank', 'A142'='stores',  'A143'='none', 'A151'='rent', 'A152'='own',
+                     'A153'='for free', 'A171'='unemployed/ unskilled - non-resident',
+                     'A172'='unskilled - resident', 'A173'='skilled employee / official',
+                     'A174'='management/ self-employed/highly qualified employee/ officer',
+                     'A191'='none', 'A192'='yes, registered under the customers name',
+                     'A201'='yes', 'A202'='no'
+)
+
+
+## Algas -----------------------------------------------------------------------
+
+## Nombre de columnas ----------------------------------------------------------
+algas_colnames <- c('season',
+                    'river_size',
+                    'fluid_velocity',
+                    'max_PH',
+                    'min_O2',
+                    'Cl',
+                    'NO3',
+                    'NH4',
+                    'oPO4',
+                    'PO4',
+                    'Chla',
+                    paste('a', seq(1:7), sep="")
+)
+
+```
+
+
+**Ejercicio 8**
+
+- Crea una función `load` en `utils.R` en tu carpeta, que descargue, si y sólo si no existe
+un archivo `german.rds`. Si no existe, descarga y guarda el archivo.
+
+```{r}
+loadGerman<-function()
+{
+    print('Cargando datos de German Data')
+    tryCatch(
+        {
+            print('El archivo existe')
+            data<-readRDS( 'german.rds')
+            #Intentaremos llamar a nuestra archivo
+            
+            
+
+        }
+    , error=function(err)
+        {
+        print('El archivo sera descargado')
+        german_url <- paste('http://archive.ics.uci.edu/ml',
+                            '/machine-learning-databases/statlog',
+                            '/german/german.data',
+                            sep='')
+
+        german_data <- read_delim(german_url,
+                                  col_names=FALSE,
+                                  delim = " ")
+        print( head(german_data))
+        saveRDS(german_data, 'german.rds')
+
+        }
+    )
+}
+```
+
+
+
+```{r}
+loadGerman()
+german_data<-readRDS( 'german.rds')
+colnames(german_data) <- german_colnames
+german_data$good_loan <- as.factor(
+                          ifelse(
+                            german_data$good_loan == 1, 
+                            'GoodLoan', 
+                            'BadLoan'
+                            )
+                          )
+
+```
+
+
+
+**Ejercicio 9**
+- Crea una función `german_decode` en un archivo `utils.R` dentro de tu carpeta, 
+esta función debe de utilizar `german_codes` (en el archivo `metadata.R`) para 
+decodificar los elementos  de todas las columnas (por ejemplo `A201` -> `yes`)
+
+- Utiliza `dplyr` para decodificar todas las columnas de `german_data`
+
+
+
+```{r}
+
+german_decode<-function(german_data, german_codes)
+{
+    german_aux<-german_data
+    gercolnames<-colnames(german_data)
+    for(i in gercolnames )
+    {
+        print(i)
+        for(j in names(german_codes))
+        {
+        german_aux[i][ german_aux[i]==j] <-german_codes[j]
+        }
+
+    }
+    german_aux<-as.data.frame(german_aux)
+    #Algunos valores regresaran como listas
+    for(i in colnames(german_data))
+    {
+        german_aux[i]<-unlist(german_aux[i])
+
+    }
+    return(german_aux)
+
+}
+
+```
+
+```{r}
+german_data<- german_data %>% german_decode(german_codes)
+head(german_data)
+```
+
+
+
+**Ejercicio 10**
+
+- ¿Hay algo raro con los datos de préstamo?
+Las variables son cadenas de texto y no pueden ser graficadas o analizadas en el estado en el que se encuentran.
+Algunas columna contienen mas de una variable por lo que es dificil saber el valor real de estas variables.
+Algunas variables numéricas aparecen como texto.
+
+- ¿Cuál crees que debería ser la distribución del resultado del 
+  préstamo `Good_Loan` respecto a `Credit history`?
+  Deberiamos encontrar una concentración diferente para los tipos de Credit history para los good loans y los bad loans, por ejemplo los bad loans deberían tener una mayor cantidad de delay in paying off in time o not existing credits.
+
+- Grafícalo y comenta tus resultados.
+```{R}
+p<-ggplot(german_data, aes(good_loan, fill=as.factor(as.character(german_data$`Credit history`)) ))
+p +  geom_bar(position="fill") + ylab("") + xlab("Composición de los prestamos") +scale_fill_discrete("Credit history")
+```
+
+
+
+Como se muestra la composicion de los BadLoan y GoodLoan son muy similares pero podemos observar la principal diferencia se encuentra en que los Good Loan tienen una mayor proporcion de cuentas con otros creditos en otros bancos. Asimismo los BadLoan tiene una mayor numero de cuentas que no han pedido creditos o todos los creditos han sido pagados de manera irregular.
+
+```{r}
+
+german_clean_colnames<-function(german_colnames)
+{
+    for( i in 1:length(german_colnames ))
+    {
+
+
+        cadena<-strsplit(german_colnames[i], ' ' )[[1]]
+        newName<-''
+        if(!is.na(cadena))
+        {
+            
+            for(j in cadena)
+            {
+
+                if(newName=='')
+                {
+                    newName<-j
+                }
+                else
+                {
+                newName<-paste( newName , j, sep = '_')
+                }
+
+            }
+            german_colnames[i]<-newName
+            print(german_colnames[i])
+        }
+
+        #------------- repetir con / ------
+
+
+        cadena<-strsplit(german_colnames[i], '/' )[[1]]
+        newName<-''
+        if(!is.na(cadena))
+        {
+
+
+            for(j in cadena)
+            {
+
+                if(newName=='')
+                {
+                    newName<-j
+                }
+                else
+                {
+                newName<-paste( newName , j, sep= '_')
+                }
+
+            }
+            german_colnames[i]<-newName
+            print(german_colnames[i])
+        }
+
+
+    }
+    return(german_colnames)
+}
+
+```
+
+```{r, echo=FALSE }
+german_colnames<-german_clean_colnames( german_colnames )
+```
+**Ejercicio 11**
+
+Revisa `german_data` con `summary()`, reporta alguna anomalía.
+
+
+```{r}
+summary(german_data)
+```
+
+
+No hay anomalias, la unica observación es que podriamos transformar ciertas variables a un formato numerico para poder obtener estadisticas descrptivas como por ejemplo el Personal_status_and_Sex o Housing.
+
+**Ejercicio 12**
+
+Asegurar que el *dataset* esté en forma *tidy*. Guarda esto en `german-tidy.rds`
+
+Para que nuestro archivo este en formato tidy es necesario separar la variable Personal_status_and_Sex pues tenemos dos valores dentro de una misma columna
+
+```{r}
+cadena<-strsplit( german_data$Personal_status_and_sex, ':')
+
+sex<-list()
+status<-list()
+for(i in cadena)
+{
+  
+    sex<-append(sex, i[1])
+    status<- append(status, i[2])
+}
+
+german_data['sex']<-sex
+german_data['status']<-status
+german_data$Personal_status_and_sex<-NULL
+
+
+saveRDS(german_data, 'german-tidy.rds')
+
+```
+ 
+ 
+```{r}
+head(  readRDS('german-tidy.rds')  )
+```
+
+
+##Algas Data Set
+
+
+** Ejercicio 13**
+
+- Repite los pasos realizados para `german.data` con `algas`
+
+- No te olvides de remover los `_` en las variables `river_size` y `fluid_velocity`
+
+- Revisa con `summary()`, reporta alguna anomalía.
+
+```{r}
+
+print('Cargando nombre de Columnas')
+loadAlgas<-function()
+{
+    print('Cargando datos de German Data')
+    tryCatch(
+        {
+            print('El archivo existe')
+            data<-readRDS( 'algas.rds')
+            #Intentaremos llamar a nuestra archivo
+            
+            
+
+        }
+    , error=function(err)
+        {
+        print('El archivo sera descargado')
+        algas_url <- 'https://archive.ics.uci.edu/ml/machine-learning-databases/coil-mld/analysis.data'
+
+        algas <- read_csv(algas_url, 
+                  col_names = algas_colnames,
+                  na = 'XXXXXXX')
+        print( head(algas))
+        saveRDS(algas, 'algas.rds')
+
+        }
+    )
+}
+
+
+#En el caso de algas no es necesario hacer un decode para los valores de las columnas
+
+print('Modificando Nombre de Columnas')
+
+algas_clean_colnames<-function(algas_colnames)
+{
+    for( i in 1:length(algas_colnames ))
+    {
+
+
+        cadena<-strsplit(algas_colnames[i], ' ' )[[1]]
+        newName<-''
+        if(!is.na(cadena))
+        {
+            
+            for(j in cadena)
+            {
+
+                if(newName=='')
+                {
+                    newName<-j
+                }
+                else
+                {
+                newName<-paste( newName , j, sep = '_')
+                }
+
+            }
+            algas_colnames[i]<-newName
+            print(algas_colnames[i])
+        }
+
+        #------------- repetir con / ------
+
+
+        cadena<-strsplit(algas_colnames[i], '/' )[[1]]
+        newName<-''
+        if(!is.na(cadena))
+        {
+
+
+            for(j in cadena)
+            {
+
+                if(newName=='')
+                {
+                    newName<-j
+                }
+                else
+                {
+                newName<-paste( newName , j, sep= '_')
+                }
+
+            }
+            algas_colnames[i]<-newName
+            print(algas_colnames[i])
+        }
+
+
+    }
+    return(algas_colnames)
+}
+
+
+```
+
+```{r}
+loadAlgas()
+algas<-readRDS('algas.rds')
+algas_colnames<-algas_clean_colnames(algas_colnames)
+
+head(summary(algas))
+```
+
+
+
+¿Por qué la columna `NO3` **no** es numérica?
+*  Porque tenemos algunas observaciones donde tenemos mas de un punto de los numeros. 
+
+
+**Ejercicio 13**
+
+- Es importante en la etapa de exploración, poder generar varias gráficas de manera automática 
+  y simple para analizarlas visualmente y tener una idea de los datos. 
+- Crea una función que genere los tipos de gráfica para cada par de variables del `data.frame` (en realidad es un `tibble`).
+  Esta función debe de recibir dos parámetros, uno que indique si genera todas las combinaciones 
+  de dos variables o recibe una lista de variables en las cuales generar las combinaciones.
+- Guárdala en `utils.R`. 
+- Crea en `03-eda.R` en ambas carpetas: `algas` y `german`.
+
+El siguiente Codigo guarda las graficas para dos tipo de variables, Discretas y continuas. Tambien contempla si el usuario esta agregando una lista o si se desea imrprimir y gusardar solo algunas variables.
+
+```{r}
+
+graficasIniciales<-function( data, lista=NULL )
+{
+    cont=0
+    variablesDiscretas<-list()
+    variablesContinuas<-list()
+
+    if(!is.null(lista))
+    {
+       print('-----Generando graficas para variables en lista')
+        for(i in lista)#Comprobando nombres en lista
+        {
+            if(is.na(match(i, colnames(data))))
+            {
+                print(paste('VALOR DE LISTA NO VALIDO ', i, sep=''))
+                return('NA')
+            }
+        }
+        for(i in lista)
+        {
+            print(paste('Graficas individulaes de ', i))
+
+
+            if(is.character(data[i][[1,1]]))
+            {
+                variablesDiscretas<-c(variablesDiscretas , i)
+                plotx<-ggplot(data, aes(data[[i]])) +
+                    geom_bar() + xlab(i)
+                ggsave( paste(paste('Grafica_Barras_', i, sep=''),'.png', sep=''), plotx)
+                print(plotx)
+            }
+            else
+            {
+
+                #Grafica de Densidad para variables continuas
+                variablesContinuas<-c(variablesContinuas, i)
+                plotx<-ggplot(data, aes(data[i])) +
+                       geom_density() + geom_vline(   xintercept = mean(as.numeric(unlist(data[i])), na.rm=TRUE  )  ) + xlab(i)
+                ggsave( paste(paste('Grafica_Densidad', i, sep=''),'.png', sep=''), plotx)
+                print(plotx)
+                cont=cont+1
+
+                #Grafica Q-Q para variables continuas
+                plotx<-ggplot(data, aes(sample=data[i])) + stat_qq()
+                print(plotx)
+                ggsave( paste(paste('Grafica_QQ_', i, sep=''),'.png', sep=''), plotx)
+                cont=cont+1
+
+                #Grafica Boxplot para variables continuas
+                plotx<-ggplot(data, aes(i, data[i])) + geom_boxplot()
+                print(plotx)
+                ggsave( paste(paste('Grafica_Boxplot_', i, sep=''),'.png', sep=''), plotx)
+                cont=cont+1
+            }
+        }
+    }
+    else
+    {
+        print('----- Generando graficas para todas las variables')
+        for(i in colnames(data))#Comprobando nombres en lista
+        {
+            print(paste('Graficas individulaes de ', i))
+            #Grafica distribucion con media
+
+            if(is.character(data[i][[1,1]]))
+            {
+                #Grafica de Barras para Varibales Discretas
+                variablesDiscretas<-c(variablesDiscretas , i)
+                plotx<-ggplot(data, aes(data[[i]])) +
+                    geom_bar() + xlab(i)
+                print(plotx)
+                ggsave( paste(paste('Grafica_Barras_', i, sep=''),'.png', sep=''), plotx)
+                cont=cont+1
+
+            }
+            else
+            {
+                #Grafica de Densidad para variables continuas
+                variablesContinuas<-c(variablesContinuas, i)
+                plotx<-ggplot(data, aes(data[i])) +
+                    geom_density() + geom_vline(   xintercept = mean(as.numeric(unlist(data[i])), na.rm=TRUE  )  ) + xlab(i)
+                ggsave( paste(paste('Grafica_Densidad_', i, sep=''),'.png', sep=''), plotx)
+                print(plotx)
+                cont=cont+1
+
+                #Grafica Q-Q para variables continuas
+                plotx<-ggplot(data, aes(sample=data[i])) + stat_qq()
+                print(plotx)
+                ggsave( paste(paste('Grafica_QQ_', i, sep=''),'.png', sep=''), plotx)
+                cont=cont+1
+
+                #Grafica Boxplot para variables continuas
+                plotx<-ggplot(data, aes(i, data[i])) + geom_boxplot()
+                print(plotx)
+                ggsave( paste(paste('Grafica_Boxplot_', i, sep=''),'.png', sep=''), plotx , width = 13, height = 13)
+                cont=cont+1
+
+            }
+
+        }
+
+
+    }
+    data2<-NULL
+    print('Grafica GGpair continuas')
+    for(i in variablesContinuas)
+    {
+        if(is.null(data2))
+        {
+            data2<-data[i]
+        }
+        else
+        {
+            data2<-cbind(data2, data[i])
+        }
+    }
+
+    #Grafica GGPAIR
+    plotx<-ggpairs(data2 )
+    print(plotx)
+    print('guardando')
+    ggsave( paste(paste('Grafica_GGPairs_', i, sep=''),'.png', sep=''), plotx , width = 13, height = 13 )
+
+    return('NA')
+}
+
+```
+
+
+
