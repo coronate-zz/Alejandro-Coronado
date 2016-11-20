@@ -11,17 +11,19 @@ library('ggplot2')
 #Proyecto Final 
 Resolver los ejercicios vistos en clase.
 
-##An?lisis Descriptivo
+##Análisis Descriptivo
 
-En esta secci?n se resuelven algunos probelmas que se presnetan cuando limpiamos bases de datos y queremos hacer uns descripcion de las relacion entre nuestras variables.
+En esta seccin se resuelven algunos probelmas que se presnetan cuando limpiamos bases de datos y queremos hacer uns descripcion de las relacion entre nuestras variables.
 
 * GGplot
-* tema2
-* tema3
+* German Data Set
+* Algas Data Set
+* Berka
+* XXX
 
+***
 
-
-###GGplot 
+##GGplot 
 
 Cargando Librerias:
 ```{r, nclude=FALSE, cache=FALSE, warning=FALSE, eval=FALSE }
@@ -150,7 +152,7 @@ pp=ggplot(subset(ggplot2movies::movies, year<1980), aes(x=length))
 
 4. Existe la variable `Short` que indica si la película es "corta" ¿Qué gráfica puedes  hacer para
    ver que criterio se utilizó para definir esta variable y cuáles están mal clasificadas?
-Para hacer un pequeño analisis primero obeservamos con colores las graficas mal clasificadas, despues utilizamos un filtro con condiciones. Queremos elegir las observaciones con short=1 pero cuya duración es mayor a 45 y las variables short=0 con duración menor a 45 minutos. 
+* Para hacer un pequeño analisis primero obeservamos con colores las graficas mal clasificadas, despues utilizamos un filtro con condiciones. Queremos elegir las observaciones con short=1 pero cuya duración es mayor a 45 y las variables short=0 con duración menor a 45 minutos. 
 
 ```{r,  warning=FALSE}
 data<-ggplot2movies::movies
@@ -178,7 +180,7 @@ p=ggplot(subset(ggplot2movies::movies, Short<=0 & length<45), aes( x=year, y=len
 ** Ejercicio 3 **
 1. Agrega *alpha-blending* ¿Qué pasa con los  *outliers*? ¿Diferentes valores funcionan mejor?
 
-Cuando aumentamos el valor alpha vemos una mayor cantidad de puntos traslucidos señalandonos cuales valores podrian ser considerados outliers dado el criterio alpha
+* Cuando aumentamos el valor alpha vemos una mayor cantidad de puntos traslucidos señalandonos cuales valores podrian ser considerados outliers dado el criterio alpha
 ```{r,  warning=FALSE}
 
 ggplot(ggplot2movies::movies, aes(votes, rating, alpha=.005)) + geom_point() + ylim(1,10)
@@ -189,7 +191,7 @@ ggplot(ggplot2movies::movies, aes(votes, rating, alpha=70)) + geom_point() + yli
 ```
 
 2. ¿Cómo se ve la gráfica si  remueves las películas con menos de 100 votos?
-Se eliminan valores extremos sobre las calificaciones y reduciomos el rango de y. Tambien es mas facil reconocer una distribución con concentración en los valores 5 y 7.5
+* Se eliminan valores extremos sobre las calificaciones y reduciomos el rango de y. Tambien es mas facil reconocer una distribución con concentración en los valores 5 y 7.5
 
 ```{r,  warning=FALSE}
 data<-subset(ggplot2movies::movies,  votes>100)
@@ -199,7 +201,7 @@ ggplot(data, aes(votes, rating, alpha=.3)) + geom_point() + ylim(1,10)+ xlim(0,2
 ```
 
 3. ¿Cómo si remueves todas las películas que tienen un *rating* arriba de 9?
-La gráfica se parece a la anterior porque existen muchas películas con calificaciones muy altas pero que fueron calificadas por pocas personas. Cuando pocas personas califican entonces es probable que su calificación sea mayor a la que realmente deberia tener.
+* La gráfica se parece a la anterior porque existen muchas películas con calificaciones muy altas pero que fueron calificadas por pocas personas. Cuando pocas personas califican entonces es probable que su calificación sea mayor a la que realmente deberia tener.
 
 ```{r,  warning=FALSE}
 data<-subset(ggplot2movies::movies,  rating<9)
@@ -238,13 +240,13 @@ MASS::Boston %>%
 
 
 1. ¿Cuáles están positivamente correlacionadas con `medv`?
-rm, dis, black
+* rm, dis, black
 
 2. La variable `crim` (tasa de crímenes per cápita) tiene *scatterplots* con forma inusual,
   donde los valores más altos de `crim` sólo ocurren para una valor de la otra variable
   ¿Qué explicación le puedes dar?
  
-Los crimene se realizan en zonas especificas, si vemos la grafica de crim vs dis vermos que a una menor distancia encontramos amyor cantidad de crimenes percapita y una mayor concentracion de observaciones. Esto quiere decir que tenemos mayor crimenes y mayores observaciones en zonas cercanas a los centros (zonas) comerciales.
+* Los crimene se realizan en zonas especificas, si vemos la grafica de crim vs dis vermos que a una menor distancia encontramos amyor cantidad de crimenes percapita y una mayor concentracion de observaciones. Esto quiere decir que tenemos mayor crimenes y mayores observaciones en zonas cercanas a los centros (zonas) comerciales.
 Las zonas comerciales deben tener caracteristicas en comun como numero de habitaciones(edificios), mayor edad, menor proporcion de zonas residenciales.
  
 3. Hay varias formas en los *scatterplots*, escoge 5 y explica como las interpretas?
@@ -276,7 +278,7 @@ En estos archivos pondrás, respectivamente el código para ejecutar los *pipeli
 casos de estudio.
 
 
-
+***
 
 
 ##German Data Set
@@ -346,24 +348,6 @@ german_codes <- list('A11'='... < 0 DM',
                      'A174'='management/ self-employed/highly qualified employee/ officer',
                      'A191'='none', 'A192'='yes, registered under the customers name',
                      'A201'='yes', 'A202'='no'
-)
-
-
-## Algas -----------------------------------------------------------------------
-
-## Nombre de columnas ----------------------------------------------------------
-algas_colnames <- c('season',
-                    'river_size',
-                    'fluid_velocity',
-                    'max_PH',
-                    'min_O2',
-                    'Cl',
-                    'NO3',
-                    'NH4',
-                    'oPO4',
-                    'PO4',
-                    'Chla',
-                    paste('a', seq(1:7), sep="")
 )
 
 ```
@@ -471,13 +455,13 @@ head(german_data)
 **Ejercicio 10**
 
 - ¿Hay algo raro con los datos de préstamo?
-Las variables son cadenas de texto y no pueden ser graficadas o analizadas en el estado en el que se encuentran.
+* Las variables son cadenas de texto y no pueden ser graficadas o analizadas en el estado en el que se encuentran.
 Algunas columna contienen mas de una variable por lo que es dificil saber el valor real de estas variables.
 Algunas variables numéricas aparecen como texto.
 
 - ¿Cuál crees que debería ser la distribución del resultado del 
   préstamo `Good_Loan` respecto a `Credit history`?
-  Deberiamos encontrar una concentración diferente para los tipos de Credit history para los good loans y los bad loans, por ejemplo los bad loans deberían tener una mayor cantidad de delay in paying off in time o not existing credits.
+* Deberiamos encontrar una concentración diferente para los tipos de Credit history para los good loans y los bad loans, por ejemplo los bad loans deberían tener una mayor cantidad de delay in paying off in time o not existing credits.
 
 - Grafícalo y comenta tus resultados.
 ```{R}
@@ -487,7 +471,7 @@ p +  geom_bar(position="fill") + ylab("") + xlab("Composición de los prestamos"
 
 
 
-Como se muestra la composicion de los BadLoan y GoodLoan son muy similares pero podemos observar la principal diferencia se encuentra en que los Good Loan tienen una mayor proporcion de cuentas con otros creditos en otros bancos. Asimismo los BadLoan tiene una mayor numero de cuentas que no han pedido creditos o todos los creditos han sido pagados de manera irregular.
+* Como se muestra la composicion de los BadLoan y GoodLoan son muy similares pero podemos observar la principal diferencia se encuentra en que los Good Loan tienen una mayor proporcion de cuentas con otros creditos en otros bancos. Asimismo los BadLoan tiene una mayor numero de cuentas que no han pedido creditos o todos los creditos han sido pagados de manera irregular.
 
 ```{r}
 
@@ -554,6 +538,7 @@ german_clean_colnames<-function(german_colnames)
 
 ```{r, echo=FALSE }
 german_colnames<-german_clean_colnames( german_colnames )
+colnames(german_data)<-german_colnames
 ```
 **Ejercicio 11**
 
@@ -571,7 +556,7 @@ No hay anomalias, la unica observación es que podriamos transformar ciertas var
 
 Asegurar que el *dataset* esté en forma *tidy*. Guarda esto en `german-tidy.rds`
 
-Para que nuestro archivo este en formato tidy es necesario separar la variable Personal_status_and_Sex pues tenemos dos valores dentro de una misma columna
+* Para que nuestro archivo este en formato tidy es necesario separar la variable Personal_status_and_Sex pues tenemos dos valores dentro de una misma columna
 
 ```{r}
 cadena<-strsplit( german_data$Personal_status_and_sex, ':')
@@ -599,16 +584,34 @@ saveRDS(german_data, 'german-tidy.rds')
 head(  readRDS('german-tidy.rds')  )
 ```
 
-
+***
 ##Algas Data Set
 
+**Cargando Metadata**
+```{r}
+## Algas -----------------------------------------------------------------------
+
+## Nombre de columnas ----------------------------------------------------------
+algas_colnames <- c('season',
+                    'river_size',
+                    'fluid_velocity',
+                    'max_PH',
+                    'min_O2',
+                    'Cl',
+                    'NO3',
+                    'NH4',
+                    'oPO4',
+                    'PO4',
+                    'Chla',
+                    paste('a', seq(1:7), sep="")
+)
+
+```
 
 ** Ejercicio 13**
 
 - Repite los pasos realizados para `german.data` con `algas`
-
 - No te olvides de remover los `_` en las variables `river_size` y `fluid_velocity`
-
 - Revisa con `summary()`, reporta alguna anomalía.
 
 ```{r}
@@ -708,11 +711,10 @@ algas_clean_colnames<-function(algas_colnames)
 
 ```
 
-```{r}
+```{r, }
 loadAlgas()
 algas<-readRDS('algas.rds')
 algas_colnames<-algas_clean_colnames(algas_colnames)
-
 head(summary(algas))
 ```
 
@@ -732,7 +734,7 @@ head(summary(algas))
 - Guárdala en `utils.R`. 
 - Crea en `03-eda.R` en ambas carpetas: `algas` y `german`.
 
-El siguiente Codigo guarda las graficas para dos tipo de variables, Discretas y continuas. Tambien contempla si el usuario esta agregando una lista o si se desea imrprimir y gusardar solo algunas variables.
+**El siguiente Codigo guarda las graficas para dos tipo de variables, Discretas y continuas. Tambien contempla si el usuario esta agregando una lista o si se desea imrprimir y gusardar solo algunas variables.**
 
 ```{r}
 
@@ -839,9 +841,10 @@ graficasIniciales<-function( data, lista=NULL )
 
     }
     data2<-NULL
-    print('Grafica GGpair continuas')
+    print(paste('VAR CONT: ', variablesContinuas))
     for(i in variablesContinuas)
     {
+        
         if(is.null(data2))
         {
             data2<-data[i]
@@ -851,17 +854,276 @@ graficasIniciales<-function( data, lista=NULL )
             data2<-cbind(data2, data[i])
         }
     }
-
+    
+    if( length(variablesContinuas)>=2 )
+    {
+    print(   paste( paste( 'Existen ' , length(variablesContinuas) ), ' variables Continuas') )
     #Grafica GGPAIR
     plotx<-ggpairs(data2 )
     print(plotx)
     print('guardando')
     ggsave( paste(paste('Grafica_GGPairs_', i, sep=''),'.png', sep=''), plotx , width = 13, height = 13 )
-
+    }
+    else
+    {
+    print('No hay suficientes variables para GGpair')
+    }
     return('NA')
 }
 
 ```
 
 
+```{r}
+graficasIniciales(algas,colnames(algas)[c(3,4,5,6)] )
+
+```
+
+
+
+**Ejercicio 14**
+
+- Genera un reporte para ambos conjuntos de datos el estado de los valores missing.
+- Muestra la matriz de correlación faltante en una gráfica.
+- ¿Qué puedes entender?
+
+```{r}
+print('Observaciones con NAs')
+algas_con_NAs <- algas[!complete.cases(algas),]
+head(algas_con_NAs)
+
+print('Numero de NAs por Observacion')
+apply(algas, 1, function(x) sum(is.na(x)))
+
+print('Seleccion de variables con un numero de NAs mayor a X')
+algas[apply(algas, 1, function(x) sum(is.na(x))) > 2,]
+
+
+```
+
+```{r}
+
+indices_con_Nas<-function(data, num )
+{
+    if(num>= 1)
+    {
+        print('El criterio de eliminacion no puede ser mayor a uno')
+        return(NULL)
+    }
+    else
+    {
+        indices<-colnames(data)
+        longitud<-length( indices )
+  
+        indRechazar<-round(longitud*num)
+        observacionesNA<-apply(algas, 1, function(x) sum(is.na(x)))
+     
+        #print(observacionesNA)
+        indices<-observacionesNA > indRechazar
+        return(indices)
+    }
+    
+}
+```
+
+* Esta funcion regresa todas las observaciones que tienen un numero de NAs por observación mayores a una fracción del total de variables en el data Set
+
+```{r}
+#Observaciones con un numero de NA's mayor al 20% de las variables
+indices_con_Nas(algas, .2)
+
+```
+
+**Ejercicio 15**
+
+- Una estrategia es rellenar los valores faltantes con alguna medida de centralidad.
+    - Media, mediana, moda, etc.
+- Para variables distribuidas normalmente, esta opción es la mejor.
+- Pero para variables *skewed*  o con *outliers* esta decisión puede ser desastrosa.
+- Por lo tanto, esta estrategia no se debe de utilizar salvo una exploración previa de las variables.
+
+#### Ejemplo
+
+- ¿A qué variables le puedes de `algas` le puedes aplicar este procedimiento?
+* De acuerdo a las siguiente graficas podemos ver que no todas las variables se comportan como una normal. En realidad sólo max_PH y min_O2 parecen tener una distribucion masomenos normal. En caso de elegir la media o la moda en los casos que no tienen distribución normal es probable que estemos tomando un valor que realmente no existe en la miuestra y por lo tanto es poco probable que exista en la realidad.
+
+```{r}
+for( i in colnames(algas))
+{
+   tryCatch(
+    {
+    print( ggplot(algas, aes( algas[i] ) ) + geom_density()  + xlab(i))
+    
+    }
+    ,error=function(err)
+    {
+        print(paste( 'No se pudo graficar: ', i))
+    })
+}
+```
+
+- ¿Qué puedes decir de `german_data`?
+* Al igual que con el data Set de Algas no tenemos muchas variables que se comporten con una distribucion normal por lo tanto tomar el valor central para sustituir a los varoles NA no seria una buena estrategia.
+ En particular duration_in_month y number_of_existing_credits parecen tener dos concentraciones de datos con diferentes medias.
+```{r}
+for( i in colnames(german_data))
+{
+   tryCatch(
+    {
+    print( ggplot(german_data, aes( german_data[i] ) ) + geom_density()  + xlab(i))
+
+    }
+    ,error=function(err)
+    {
+        print(paste( 'No se pudo graficar: ', i))
+        
+    })
+}
+```
+
+- A las variables que no se les puede aplicar, explica por qué no.
+* Estas Variables no tienen  una distribución normal o uniforme por lo que elegir la media para sustituir los valores NA con este numero no nos daria una buena aproximación del valor real de estas variables.  Tomemos el caso extremo de una variable binaria, el promedio siempre estara entre 0 y 1 pero este promedio no necesariamente existe como una observación
+
+- Esta decisión debe de ser reproducible, agrega a `utils.R` una función que impute 
+en las variables con  `NAs` el valor central (`median` si es numérica, `moda` si es categórica).
+La función debe de tener la siguiente firma:
+
+```{r}
+print('Texto adicional')
+problematic_rows <- problems(algas)$row
+
+algas[problematic_rows,] <- algas %>% 
+    slice(problematic_rows) %>% 
+    unite(col="all", -seq(1:6), sep = "/", remove=TRUE) %>%
+    extract(all, into=c("NO3", "NH4", "resto"), regex="([0-9]*.[0-9]{5})([0-9]*.[0-9]*)/(.*)/NA", remove=TRUE) %>%
+    separate(resto, into=names(algas)[9:18], sep="/", remove=TRUE)    
+
+
+algas$NO3<- as.numeric(algas$NO3)
+algas$NH4<-as.numeric(algas$NH4)
+algas$oPO4<-as.numeric(algas$oPO4)
+algas$PO4<-as.numeric(algas$PO4)
+algas$Chla<-as.numeric(algas$Chla)
+algas$a1<-as.numeric(algas$a1)
+algas$a2<-as.numeric(algas$a2)
+algas$a3<-as.numeric(algas$a3)
+algas$a4<-as.numeric(algas$a4)
+algas$a5<-as.numeric(algas$a5)
+algas$a6<-as.numeric(algas$a6)
+algas$a7<-as.numeric(algas$a7)
+
+print('FUNCION IMPUTAR VALOR CENTRAL')
+imputar_valor_central <- function(data, colnames)
+{
+    for(i in colnames)
+    {
+        if(is.numeric(data[[i]][1]) ||is.numeric(data[[i]][2]) ) #Valores numericos
+        {
+        print(paste('VALOR NUMERICO', i, sep=' ')) 
+        print('DATA SET')
+        print( data[[i]] )
+        media <-mean( as.numeric(as.character( data[[i]])), na.rm = TRUE)
+        print(media) 
+        data[[i]][is.na(data[[i]])]<-media
+        
+        }
+        else
+        {   print('VALOR DISCRETO')
+            moda<-''
+            maximo<-0
+            valores<-unique(data[[i]])
+            
+            #Print obtención de MODA
+            print(valores)
+            for(v in valores)
+            {
+                
+                
+                cont<-0
+             for(j in 1:length(data[[i]]))
+             {
+                 #print(paste( paste( paste(paste(paste('Valor i: ', i), '  Valor j: '), j), '  Valor v: '  ), v))
+                 #print(data[[i]][j])
+                if(!is.na(data[[i]][j]) && !is.na(v) )
+                {
+                    #print(paste('value' , data[[i]][j] ) )
+                     if(data[[i]][j]==v) 
+                    {
+                         cont=cont+1
+                     }
+                }
+             }
+             if(cont>maximo)
+                 {
+                 moda<-v
+                 maximo<-cont
+                 }
+            }
+            data[[i]][is.na(data[i])]<-moda
+        }
+    }
+    return(data)
+}
+
+
+
+
+```
+
+
+```{r}
+index<-!complete.cases(algas)
+
+algas[index,]
+algas_central<-imputar_valor_central(algas, colnames(algas))
+
+algas_central[index,]
+
+
+```
+
+
+
+**Ejercicio 16**
+Crea una función que sustituya los `NAs` con el valor dado por la 
+regresión lineal recién calculada (No automatices la regresión lineal) usando la
+siguiente firma
+
+```{r}
+algas %>%
+    select(-c(1:3)) %>%
+    cor(use="complete.obs") %>%
+    symnum()
+
+imputar_valor_lm <- function(var_dependiente, var_independiente)
+    {
+    
+    modelo<-lm(var_dependiente ~  var_independiente )
+    intercepto<-modelo$coefficients[1]
+    beta<-modelo$coefficients[2]
+    
+    lmResult <-intercepto + (beta*var_independiente[is.na(var_dependiente)])
+    print(paste('Resultados Regresion  : ' , lmResult))
+    
+    
+    var_dependiente[is.na(var_dependiente)]<-lmResult 
+    return(var_dependiente)
+
+    }
+```
+
+* Utilizando esta natriz podemos ver que podemos predecir el valor para PO4 utilizando las variables de Cl ya que ambas estan correlacionados y por lo tanto el valor de los coeficientes debe ser significativo. Podríamos usar oPO4 pero es probable que las variables tengan NA en las mismas posiciones y por lo tanto hacer regresiones no sería eficiente.
+
+```{r}
+index<-is.na(algas$PO4)
+cat('\nValores Vacios')
+algas$PO4[index]
+
+algas_lm<-algas
+algas_lm$PO4 <-imputar_valor_lm(algas_lm$PO4, algas$Cl)
+cat('\n\nValores Calculados\n')
+algas_lm$PO4[index]
+
+
+```
 
