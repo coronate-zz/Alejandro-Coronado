@@ -26,7 +26,7 @@ En esta seccin se resuelven algunos probelmas que se presnetan cuando limpiamos 
 ##GGplot 
 
 Cargando Librerias:
-```{r, nclude=FALSE, cache=FALSE, warning=FALSE, eval=FALSE }
+```{r cache=FALSE, warning=FALSE}
 
  library('lubridate')
  library( 'magrittr')
@@ -674,7 +674,7 @@ algas_clean_colnames<-function(algas_colnames)
 
             }
             algas_colnames[i]<-newName
-            print(algas_colnames[i])
+            #print(algas_colnames[i])
         }
 
         #------------- repetir con / ------
@@ -700,7 +700,7 @@ algas_clean_colnames<-function(algas_colnames)
 
             }
             algas_colnames[i]<-newName
-            print(algas_colnames[i])
+            #print(algas_colnames[i])
         }
 
 
@@ -711,7 +711,7 @@ algas_clean_colnames<-function(algas_colnames)
 
 ```
 
-```{r, }
+```{r,  }
 loadAlgas()
 algas<-readRDS('algas.rds')
 algas_colnames<-algas_clean_colnames(algas_colnames)
@@ -1095,10 +1095,10 @@ algas %>%
     cor(use="complete.obs") %>%
     symnum()
 
-imputar_valor_lm <- function(var_dependiente, var_independiente)
+imputar_valor_lm <- function(var_dependiente, var_independiente, modelo)
     {
     
-    modelo<-lm(var_dependiente ~  var_independiente )
+    
     intercepto<-modelo$coefficients[1]
     beta<-modelo$coefficients[2]
     
@@ -1112,7 +1112,7 @@ imputar_valor_lm <- function(var_dependiente, var_independiente)
     }
 ```
 
-* Utilizando esta natriz podemos ver que podemos predecir el valor para PO4 utilizando las variables de Cl ya que ambas estan correlacionados y por lo tanto el valor de los coeficientes debe ser significativo. Podríamos usar oPO4 pero es probable que las variables tengan NA en las mismas posiciones y por lo tanto hacer regresiones no sería eficiente.
+* Utilizando esta matriz podemos ver que podemos predecir el valor para PO4 utilizando las variables de Cl ya que ambas estan correlacionados y por lo tanto el valor de los coeficientes debe ser significativo. Podríamos usar oPO4 pero es probable que las variables tengan NA en las mismas posiciones y por lo tanto hacer regresiones no sería eficiente. 
 
 ```{r}
 index<-is.na(algas$PO4)
@@ -1120,10 +1120,681 @@ cat('\nValores Vacios')
 algas$PO4[index]
 
 algas_lm<-algas
-algas_lm$PO4 <-imputar_valor_lm(algas_lm$PO4, algas$Cl)
+modelo<-lm(algas_lm$PO4 ~  algas_lm$Cl )
+algas_lm$PO4 <-imputar_valor_lm(algas_lm$PO4, algas_lm$Cl, modelo)
 cat('\n\nValores Calculados\n')
 algas_lm$PO4[index]
 
 
 ```
 
+
+
+**Ejercicio 17** 
+* Es importante normalizar los valores numéricos antes de calcular las distancias. ¿Por qué?
+Porque dos variables podrian ser muy parecidas y tener un comportamiento muy similar pero estar a diferentes escalas. Como estamos midiendo las distancias entonces la correlación se perdera por los numeros altos en un escala vs numeros pequeños en una escala menor. Un ejmplo sería tener la misma mariable medida en km y en centimetros. Si normalizamos tendremos una distancia igual 0 pero si no normalizamos las distancia aparecera muy grande.
+
+
+**Ejercicio 18** 
+
+- Implementen una función que impute por similitud con la firma
+
+```{r}
+data<-algas
+print(data$a3[1])
+```
+
+```{r}
+imputar_por_similitud <- function(data, num_vecinos)
+{
+ for(variable in colnames(data) )
+ {
+     if( is.numeric( data[[variable]][1] ) )
+     {
+         print(paste('Variable Numerica: ' , variable))
+
+         var_media<-mean( unlist( data[variable] ), na.rm=TRUE )
+         var_sd<- sd( unlist( data[variable] ), na.rm=TRUE)
+         
+         cat(paste(paste(paste('\nVariable Media:', var_media ), '    Variable sd: '), var_sd))
+         
+         variable_std<-(data[[variable]]-var_media ) /var_sd
+         vecinos<- data[colnames(data)[!colnames(data) == variable]]
+         lista_distancias<-list()
+         #print(paste('COL NAMES:' , colnames(vecinos)))
+         for(vecino in colnames(vecinos) )
+         {
+             
+            if( is.numeric(data[[vecino]][1]))
+             {
+                 cat(paste('\n\nVecino Numerica: ' , vecino))
+                 vecino_media<-mean( unlist( data[vecino] ), na.rm=TRUE)
+                 vecino_sd<- sd( unlist( data[vecino] ), na.rm=TRUE)
+                 #Calculamos la distancia
+                 cat(paste(paste(paste('\n\t    Vecino Media:', vecino_media ), '    Vecino sd: '), vecino_sd))
+                 vecino_std<-(data[[vecino]]-vecino_media) /vecino_sd 
+                 
+                 suma<-0
+                 cont<-0
+                 #Calculamos la distancia
+                 #print( paste('len: ', length(vecino_std)))
+                 for(i in 1:length(vecino_std))
+                 { 
+                     cont<-cont+1
+                     if(!is.na(vecino_std[[i]]) &&  !is.na(variable_std[[i]]))
+                     {
+                     suma<- suma + ( (vecino_std[[i]]-variable_std[[i]]  )**2 )
+                     #print(paste('SUMA:', suma))
+                     }
+                 }
+                 distancia<-sqrt(suma/cont)
+                 #print(paste('DISTANCIA:  ', distancia))
+                 lista_distancias<-c(lista_distancias, distancia)
+                 
+                
+                 
+            }
+            else
+             {
+                print(paste('Vecino No numerico: ', vecino))
+                lista_distancias<-c(lista_distancias, 0)
+                     
+             }
+         }
+         
+         if(length(lista_distancias)>0)
+         {
+         
+         #cat(paste('\n\n\t\tlista de distancias: ', unlist(lista_distancias)))
+             
+         #print(unlist( sort( unlist(lista_distancias), index.return=TRUE )[2]))
+         vecinos_cercanos_orderNum<-unlist( sort( -unlist(lista_distancias), index.return=TRUE )[2])[1:num_vecinos]
+         #print(paste('ORDERNUM: ', vecinos_cercanos_orderNum))
+         vecinos_cercanos<-vecinos[vecinos_cercanos_orderNum]
+
+         total<-sum(unlist(lista_distancias)[1:num_vecinos])
+         ponderaciones<-list()
+         suma<-0
+         for(x in 1:num_vecinos)
+        {
+            ponderaciones<-c(ponderaciones, unlist(lista_distancias)[x]/total)
+         }
+         
+         print(paste('PONDERACIONES: ', unlist(ponderaciones)))
+         for(x in 1:length( vecinos_cercanos) )
+         {
+             #print(paste('VECINOS_CERCANOS: ',vecinos_cercanos[[x]] ))
+             suma<-suma+ vecinos_cercanos[[x]][is.na(data[variable])] *  unlist(ponderaciones)[x]
+         }
+         
+         
+         print(suma)
+         data[[variable]][ is.na(data[variable]) ]<-suma
+        
+         }
+         else
+         {
+             print('No hay lista de distancias')
+         }
+     }
+     else
+     {
+         print(paste('Variable NO Numerica: ' , variable))
+         #No hay variables que sean similares para variables categoricas por lo que la delta de Kronecker siempre sera          #0
+     }
+ } 
+    
+}
+```
+
+- Aplícalo a `algas` y `german`. 
+
+```{r, include=FALSE, cache=FALSE, eval=FALSE}
+algas_sim<-imputar_por_similitud(algas, 2)
+german_sim<-imputar_por_similitud(german_data, 2)
+#imputar_por_similitud(german,2)
+
+```
+- ¿Son muy diferentes las estadísticas ignorando los `NAs` comparadas con este método?
+* Esto dependera de que tantos valores tengamos asigandos en NA para cada Variable y que tan parecidos(que tan pequeñas sean las distancias) entre los valores que estamos usando para predecir los datos faltantes. En el caso de German Data y Algas los summary no se ven muy afectados porque no habia muchos valores NA. Asimismo en German Data la mayoria de las variables son no numericas y no se relacionan con las otras variables categoricas(No miden el mismo valor) luego entonces estas variables permanecieron iguales. 
+
+```{r}
+algas
+summary(algas)
+summar(algas_sim)
+
+summary(german_data)
+summary(german_sim)
+```
+
+
+
+**Ejercicio 19**
+
+En este momento es quizá una buena idea, dejar de duplicar código y concentrar 
+  todas las funciones de `utils.R` que se puedan reutilizar en un archivo `toolset.R`.
+  Ajusta tus demás archivos de acordemente.
+Crea un `R notebook` para cada *dataset* utilizando los archivos reproducibles y el archivo
+  `toolset.R`. Incluye en estos `notebook` la estructura de los datos, *GEDA* transformaciones de los datos 
+  y observaciones pertinentes (como *outliers*, estructura de los datos faltantes). 
+  Explica los métodos de imputación que usaste (si fué necesario) y porqué los usaste.
+
+*Se presentan todos los ejercicios en este R notebook con las funciones incorporadas para que sea más facil evaluar los resultados y comparar entre ejercicios.
+
+
+***
+
+## Titanic Data Set
+
+**Ejercicio 20**
+
+- En algunos *data sets* se agregaron columnas de más, remuévelas
+- Genera las siguientes variables: `survived`, `name`, `last_name`, `sex`
+- Agrega una columna de `age` que sea categórica
+- Arregla la columna de precio, edad
+- Ajusta a precios del día de hoy (Por ejemplo usa esta [página](http://inflation.stephenmorley.org/))¿En que clase hubieras viajado? ¿Cuál era tu probilidad de supervivencia?
+
+De acuerdo con la calculadora de inflación 1 libra en 1912 equivale a 106 libras en valor presente. 106 libras son  25.5* 106 pesos mexicanos. 
+```{r}
+
+titanic['pesos_per_ticket_vp']<-titanic$pounds_per_ticket#*106*25.5
+
+titanic %>% filter(Class %in% c('1st Class', '2nd Class', '3rd Class')) %>%
+ggplot(aes(pesos_per_ticket_vp/1000, fill=survived)) + xlim(1,50)+
+    geom_histogram() + facet_grid(sex~Class  )
+
+
+#Si tomaramos solo los boletos que son economicamente accesibles es probable que terminara en 3ra clase. Dado que estoy en tercera clase tengo una probabilidad de sobrevivir de 24.4%
+titanic_3rd<-subset(titanic, titanic$Class=='3rd Class')
+print(length(titanic_3rd$survived[ titanic_3rd$survived] )/length(titanic_3rd$survived))
+
+#Si ademas contemplamos que soy hombre entonces tendre una probabilidad de sobrevivencia de 15.6%
+titanic_3rd_M<-subset(subset(titanic, titanic$Class=='3rd Class'),  sex=='M')
+print(length(titanic_3rd_M$survived[ titanic_3rd_M$survived] )/length(titanic_3rd_M$survived))
+
+
+```
+
+- Crea un método para unificar los *data sets* en uno solo.
+- Observando la distribución de botes que se muestra en la figura ¿Qué puedes decir sobre como se utilizaron?
+  ¿Coincide con la película de Titanic de James Cameron?
+En la grafica vemos qu ela mayoria de los barcos se encontraban a la mitad de su capacidad. Si no mal recuerdo en la pelicula no habia suficiente espacio para todos y los barcos estaban todos llenos. Hace mucho que la vi pero la distribución indica que los barcos 
+```{r}
+readRDS('titanic.RDS')
+barcos<-titanic %>%
+    group_by(Boat) %>%
+    dplyr::summarise(n=n()) %>%
+    arrange(desc(n))
+barcos<-barcos %>% mutate( capacidad_total=ifelse( as.integer(Boat) %in% c(1:16), 65,
+                                   ifelse (Boat %in% c(LETTERS[1:4]), 45, NA)))
+
+ggplot( barcos, aes( n, capacidad_total, color=Boat )) + geom_point() + facet_grid(~  capacidad_total )+ xlim(1,65)
+```
+
+
+***
+##Berka Data Set
+
+```{sql eval=FALSE}
+.import account.asc accounts
+.import client.asc clients
+.import card.asc cards
+.import disp.asc disps
+.import district.asc districts
+.import loan.asc loans
+.import order.asc orders
+.import trans.asc transactions
+
+ .save berka.raw
+ 
+```
+
+**Ejercicio 21**
+
+Cargaremos los datos en `berka.raw`
+```{sql}
+
+sqlite3 berka.raw
+
+```
+
+
+**Ejercicio 22**
+
+- Verifica que cada `account` tenga un `owner`
+* Como podemos ver en esta base de datos cada cuenta tiene asignado un único cliente. Notemos que estamos aplicando la funcion count sobre account_id y client_id. De esta forma si hubiera mas de dos cientes con la misma cuenta o dos cuentas con el mismo cliente, count marcaria 2. Asimismo el ordenamiento descendente nos permitiria encontrar estos valores >1 al  inicio de la tabla.
+
+```{sql }
+
+select a.account_id, c.client_id, type, count(*) 
+from accounts a, disps d, clients c  
+on 
+a.account_id = d.account_id 
+and 
+d.client_id = c.client_id 
+group by a.account_id, c.client_id, type 
+order by count(*) desc 
+limit 10;
+
+```
+
+
+- Los registros de  `orders` y `loans` están duplicados en `transactions`. Es decir
+los regsitros de `order`y `loan` están dentro de  `transactions` (por ejemplo, 
+Los registros de `loan` en `tran` están identificados por el `k_symbol` `LP`)
+
+```{r}
+
+```
+
+- Traduce los campos del checo al inglés.
+- En `transaction` traduce la columna `type`, `operation`, `k_symbol`
+- Ajustamos los nombres de las tablas a plural, los `*_id` a singular.
+```{sql}
+select distinct frequency from accounts;
+
+update accounts set frequency='Weekly Fee' WHERE frequency='POPLATEK MESICNE';
+update accounts set frequency='Monthly Fee' WHERE frequency='POPLATEK TYDNE' ;
+update accounts set frequency='Fee after Transaction' WHERE frequency='POPLATEK PO OBRATU';
+
+select distinct K_symbol from orders;
+
+update orders set K_symbol='Premium' WHERE K_symbol='POJISTNE';
+update orders set K_symbol='Sipo'    WHERE K_symbol='SIPO' ;
+update orders set K_symbol='Leasing' WHERE K_symbol='LEASING';
+update orders set K_symbol='Uber'    WHERE K_symbol='UBER';
+
+select distinct type from cards;
+Los valores estan en ingles.
+
+
+select distinct type from transactions;
+update transactions set type='INCOME' WHERE type='PRIJEM';
+update transactions set type='EXPENDITURE' WHERE type='VYDAJ';
+update transactions set type='CHOICE' WHERE type='VYBER';
+
+
+```
+
+- En `client` cambia `BirthNumber` a `sex` y `age`
+- Discretiza `age` en `Youth` (0-24), `Adult` (25-45), `Middle-age` (46-64) y `Senior` (> 65)
+```{sql}
+
+SELECT 
+(
+CASE 
+    WHEN year <= 1952 THEN 'Senior' 
+    WHEN 1952 < year and year <= 1971  THEN 'Middle Age' 
+    WHEN 1971 < year and year <= 1992 THEN 'Adult' 
+    WHEN 1992 < year                   THEN 'Youth' 
+    END
+) age,
+(
+CASE 
+    WHEN month >=50 THEN 'M' 
+    WHEN month < 50 THEN 'F' 
+    END
+) sex,
+year,
+(
+CASE
+    WHEN month>=50 THEN (month-50)
+    WHEN month<50 THEN month
+    END
+) month,
+day
+
+FROM
+    (
+    SELECT (substr(birth_number,1,2) +1900) year , 
+        substr(birth_number,1,2) month , 
+        substr(birth_number,1,2) day   
+        FROM CLIENTS )
+
+```
+
+
+- En `disposition` cambia de `Dispondent` -> `User` 
+```{sql}
+
+select distinct type from disps;
+update disps set type='USER' WHERE type='DISPONENT';
+```
+
+- En `loan` discretiza usando alguna heuristica `amount`, `duration`  y `payments`
+```{sql}
+
+SELECT 
+(
+CASE
+    WHEN amount >= avg(amount) and duration>= avg(duration) and payments >= avg(payments) THEN 'Criterio 1'
+    WHEN amount >= avg(amount) and duration>= avg(duration) and payments <  avg(payments) THEN 'Criterio 2'
+    WHEN amount >= avg(amount) and duration < avg(duration) and payments >= avg(payments) THEN 'Criterio 3'
+    WHEN amount >= avg(amount) and duration < avg(duration) and payments <  avg(payments) THEN 'Criterio 4'
+    WHEN amount < avg(amount) and duration>= avg(duration) and payments >=  avg(payments) THEN 'Criterio 5'
+    WHEN amount < avg(amount) and duration>= avg(duration) and payments <   avg(payments) THEN 'Criterio 6'
+    WHEN amount < avg(amount) and duration<  avg(duration) and payments >=  avg(payments) THEN 'Criterio 7'
+    WHEN amount < avg(amount) and duration<  avg(duration) and payments <   avg(payments) THEN 'Criterio 8'
+    END
+) criterios
+
+FROM
+(
+    SELECT amount,
+           duration,
+           payments  
+    FROM loans
+)
+
+
+```
+
+
+- Guardemos los datos en `berka.clean`
+
+```{r}
+ .save berka.clean 
+```
+
+
+**Ejercicio 23**
+
+- Denormalicemos los datos
+- ¿Cuál es el objeto que nos interesa? ¿Tarjeta? ¿Transacción? ¿Cliente?
+- ¿Cómo quedarían las tablas?
+* Dependiendo de cual sea el objeto que más nos interesa analizar haremos el left_join con el resto de los variables empezando con la de prioridad uno hasta llegar a la de ultima prioridad. Siguiendo este metodo evitaremos perder datos reelevnates o que sean parte de nuestro analisis.
+*  En el siguiente caso elegimos como variable principal clientes y juntamos las tablas de ordenes, cuentas y disps. La tabla de disps funciona como un conector entre clientes y accounts brindadndonos el account_id y el client_id que que le corresponde a cada account. LA siguiente estructura serviria para identificar los clientes con mayor numero de ordens y las caracteristicas de la cuenta de cada cliente. 
+```{sql}
+
+SELECT * FROM orders
+LEFT JOIN
+(
+    SELECT * FROM clients
+    LEFT JOIN
+    (
+        SELECT * FROM 
+        accounts a INNER JOIN  disps on a.account_id
+    ) b
+    on b.client_id
+    
+)c on c.account_id
+
+ORDER BY client_id;
+
+
+```
+
+
+***
+##Models 
+**Ejercicio 24 **
+Implementar el método low_variability() en utils.r
+```{r}
+
+low_variability<-function( data, criterio=.20 )
+{
+  #La funcion obtiene un Data Set y elimina las variables con poca variabilidad.
+  #Para definir que variables tienen poca variabilidad se obtine el QRT de cada una y se eliminan las que sean menor a rango.
+  #rango elimina el 20% si no se define de otra manera
+
+  suma<-0
+  cont<-0
+  for( var in data)
+  {
+     if(is.numeric( var[1]) )
+     {
+     suma<-suma+ IQR(unlist( var ), na.rm = TRUE)
+     }
+
+  }
+  rango<- (suma/length(data)) * criterio #Promedio de IQRs por la ponceracion
+
+  cat(paste('\n\nRango: ', rango ))
+
+  for( var in names(data) )
+  {
+    if(is.numeric( data[[var]][1]))
+    {
+        if( IQR(unlist( data[var] ), na.rm = TRUE) < rango )
+        {
+            cat(paste( paste( '\nVariable con baja Variabilidad: ', var),
+                   paste('\n\t\tVariabilidad == ' , IQR(unlist( data[var] ), na.rm = TRUE)  )))
+            data[var]<-NULL
+        }
+
+    }
+      else
+      {
+          print(paste('Variable no numerica: ', var ))
+      }
+  }
+
+ return( data )
+}
+
+
+```
+
+Aplicando la funcion con BOSTON Data Set
+```{r}
+print('BOSTON DATA SET')
+data<-MASS::Boston
+hightVarData<- low_variability(data)
+cat('\n\nALGAS DATA SET')
+data<-readRDS('algas.rds')
+hightVarData<- low_variability(algas, .5)
+
+```
+
+**Ejericicio 25**
+Implementar el método correlation_filtering() en utils.r.
+Implementar el método correlation_filtering() en utils.py.
+
+R:
+```{r}
+correlation_filtering<- function( data, criterio=.9 )
+{
+  listaSave<-c('')
+  listaEliminar<-list()
+  for( var in names(data) )
+  {
+    #print(paste('NAME: ', var))
+    if(is.numeric(data[[var]][1]))
+    {
+      
+    for(varComp in names(data))
+    {
+      if(is.numeric(data[[varComp]][1]))
+      {   
+        if(var!=varComp && !varComp %in% listaSave ) #Queremos comparar entre variables
+        {
+            #cat(paste(paste('\nCOMPAREE, correlacion',cor(data[var], data[varComp],  use="complete.obs") ), criterio, sep=' : '))
+            
+            if(abs(cor(data[var], data[varComp],  use="complete") )>criterio)
+            {
+            #cat('\n\tCORRELATION')
+            print(paste(paste(paste('Variable ', var ), ' altamente correlacionada con '), varComp))
+            listaEliminar<-c(listaEliminar, varComp)
+            listaSave<-c(listaSave, var)
+            }
+        }
+      }
+    }
+    }
+    else
+     {
+     cat(paste('\nVariable no numerica: ', var))     
+     }
+  }
+  listaEliminar<-unique(listaEliminar)
+  cat(paste('\n\tVariables a eliminar: ', listaEliminar))
+  cat(paste('\n\tVariables Seleccionadas: ', listaSave))
+  for(i in listaEliminar)
+  {
+    data[i]<-NULL
+  }
+
+ return( data )
+}
+
+```
+
+PYTHON:
+```{python}
+
+
+```
+
+**Anotaciones: En el caso del data set algas las correlaciones aparecen muy bajas porque se ignoran todos los va,ores que son NA. Lo curioso es que son NA es ambos casos por ejemplo la correlacion de PO4 y oPO4 es de .287 pero es probable que las variables tengan una correlación mayor si asignaramos un valor cada vez que ambas variables tienen asignado NA en la misma posición.
+```{r}
+
+cat('\nBOSTON DATA SET')
+data<-MASS::Boston
+hightVarData<- correlation_filtering(data)
+
+cat('\n\nALGAS DATA SET')
+algas<-readRDS('algas.rds')
+hightVarData<- correlation_filtering(algas, .5)
+
+```
+
+
+
+**Ejericicio 26**
+Implementar el método FCB_filtering() en utils.r.
+Implementar el método FCB_filtering() en utils.py.
+
+```{r}
+FCB_filtering<- function( y, data, criterio=.9 )
+{
+    listaSave<-c('')
+    corrY<-list()
+    variables<-list()
+
+    for(i in names(data))
+    {
+        if( is.numeric(data[[i]][1] ))
+        {
+            variables<-c(variables, i )
+            corrY<-c(  corrY, abs(cor (y, data[i], use='complete')))
+            cat(paste(paste(paste('\nCorrelación: ', abs(cor(y, data[i], use='complete')) ), '  Variable:'), i))
+        }
+    }
+
+    variables<-unlist(variables)
+    corrY<-unlist(corrY)
+    variables<-variables[order(corrY, decreasing = TRUE)]
+    cat('\n\n\tVariables Ordenadas')
+    print(variables)
+    listaEliminar<-list()
+    for( var in variables )
+    {
+        listaSave<-c(listaSave, var)
+        for(varComp in names(data))
+        {
+            
+            if(var!=varComp  && is.numeric(data[[varComp]][1] ) && !varComp %in% unlist(listaSave) )
+            {
+                if(cor(data[var], data[varComp], use = 'complete') >criterio)
+                { 
+                    listaEliminar<-c(listaEliminar, varComp)
+                    
+                }
+            }
+        }
+
+    }
+
+    listaEliminar<-unique(listaEliminar)
+    print('lista a Eliminar')
+    print(unlist(listaEliminar))
+    print('Lista Guardada')
+    print(unlist(listaSave))
+    for(i in listaEliminar)
+    {
+        data[i]<-NULL
+    }
+
+    return( data )
+}
+```
+
+
+```{r}
+cat('\nBOSTON DATA SET')
+data<-MASS::Boston
+hightVarData<- FCB_filtering(data$crim ,select( data, -crim), .9)
+
+cat('\n\nALGAS DATA SET')
+algas<-readRDS('algas.rds')
+hightVarData<- FCB_filtering(algas$PO4, select(algas, -PO4), .4)
+
+```
+
+
+**Ejericicio 26**
+
+Implementar el método forward_filtering() en utils.r.
+Implementar el método forward_filtering() en utils.py.
+
+* Para R se propone el modelo de regresión lineal
+```{r}
+
+forward_filtering<-function(y, data)
+{
+    smp_size <- floor(0.75 * nrow(data))
+
+    set.seed(123)
+    train_ind <- sample(seq_len(nrow(data)), size = smp_size)
+    X_train <- data[train_ind, ]
+    X_test <- data[-train_ind, ]
+    Y_train<- y[train_ind]
+    Y_test <- y[-train_ind]
+    
+    
+    
+    for(var in colnames(data))
+    {
+        
+    }
+    
+ 
+    
+       
+}
+
+
+
+```
+
+
+
+Ejercicio
+
+Implementar el método epsilon() en utils.r, para el caso de una variable, tanto numérico como categórico.
+Haga lo mismo para utils.py
+
+
+
+Ejercicio Crea una función para crear la curva ROC, llámala plot_roc y guárdala en utils.py
+
+Ejercicio Crea una función para generar la gráfica de precision/recall, llámale plot_prec_rec
+
+Ejercicio Crea una función para generar esta gráfica, llámale plot_double_density
+
+Ejercicio: Abre Rstudio y guarda el data.frame de Titanic y guárdalo como archivo feather y en una base de datos sqlite.
+
+Ejercicio: Lee desde python la base de datos de Titanic.
+
+Ejercicio: Crea tu versión del magicloop, pero agrega un parámetro para usar Grid Seach o Random Grid Search, utiliza cross-validation, no hold-out.
+
+Ejercicio: Utilízalo para el dataset de Titanic. Utiliza los siguientes clasificadores: Random Forest, Logistic Regression, Extra Trees, AdaBoost, Logistic Regression, SVC, Naïve Bayes, Decision Trees, DummyClassfier y KNN.
+
+Ejercicio Reporta la métrica que vas a usar y el porqué la escogiste. ¿Cuál es el mejor modelo en esa métrica? ¿Utilizaste algún threshold? Presenta las gráficas de prec/rec@k y ROC.
+
+Ejercicio Compara los tiempos de GridSearch y Random Grid Search (Usa %timeit)
+
+Ejercicio
+
+Crea un servicio web que despliegue el mejor modelo de Titanic. Este servicio debe de recibir un vector de datos que y regrese la probabilidad de supervivencia (si aplica).
+¿Cómo modificarías el servicio web que creaste para implementar evaluación en línea y que además permita ejecutar un algoritmo multiarmed bandit?
