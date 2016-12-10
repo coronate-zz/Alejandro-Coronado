@@ -1758,43 +1758,43 @@ forward_filtering<-function(y, data)
         
     }
     
- 
-    
-       
 }
-
-
 
 ```
 
 
 
-Ejercicio
-
+**Ejercicio 27**
 Implementar el método epsilon() en utils.r, para el caso de una variable, tanto numérico como categórico.
 Haga lo mismo para utils.py
 
+**Ejercicio 28**
+Crea una función para crear la curva ROC, llámala plot_roc y guárdala en utils.py
 
+**Ejercicio 29**
+Crea una función para generar la gráfica de precision/recall, llámale plot_prec_rec
 
-Ejercicio Crea una función para crear la curva ROC, llámala plot_roc y guárdala en utils.py
+**Ejercicio 30**
+Crea una función para generar esta gráfica, llámale plot_double_density
 
-Ejercicio Crea una función para generar la gráfica de precision/recall, llámale plot_prec_rec
+**Ejercicio 31**
+Abre Rstudio y guarda el data.frame de Titanic y guárdalo como archivo feather y en una base de datos sqlite.
 
-Ejercicio Crea una función para generar esta gráfica, llámale plot_double_density
+**Ejercicio 32** 
+Lee desde python la base de datos de Titanic.
 
-Ejercicio: Abre Rstudio y guarda el data.frame de Titanic y guárdalo como archivo feather y en una base de datos sqlite.
+**Ejercicio 33**
+Crea tu versión del magicloop, pero agrega un parámetro para usar Grid Seach o Random Grid Search, utiliza cross-validation, no hold-out.
 
-Ejercicio: Lee desde python la base de datos de Titanic.
+**Ejercicio 34**
+Utilízalo para el dataset de Titanic. Utiliza los siguientes clasificadores: Random Forest, Logistic Regression, Extra Trees, AdaBoost, Logistic Regression, SVC, Naïve Bayes, Decision Trees, DummyClassfier y KNN.
 
-Ejercicio: Crea tu versión del magicloop, pero agrega un parámetro para usar Grid Seach o Random Grid Search, utiliza cross-validation, no hold-out.
+**Ejercicio 35**
+Reporta la métrica que vas a usar y el porqué la escogiste. ¿Cuál es el mejor modelo en esa métrica? ¿Utilizaste algún threshold? Presenta las gráficas de prec/rec@k y ROC.
 
-Ejercicio: Utilízalo para el dataset de Titanic. Utiliza los siguientes clasificadores: Random Forest, Logistic Regression, Extra Trees, AdaBoost, Logistic Regression, SVC, Naïve Bayes, Decision Trees, DummyClassfier y KNN.
+**Ejercicio 36**
+Compara los tiempos de GridSearch y Random Grid Search (Usa %timeit)
 
-Ejercicio Reporta la métrica que vas a usar y el porqué la escogiste. ¿Cuál es el mejor modelo en esa métrica? ¿Utilizaste algún threshold? Presenta las gráficas de prec/rec@k y ROC.
-
-Ejercicio Compara los tiempos de GridSearch y Random Grid Search (Usa %timeit)
-
-Ejercicio
-
+**Ejercicio 37**
 Crea un servicio web que despliegue el mejor modelo de Titanic. Este servicio debe de recibir un vector de datos que y regrese la probabilidad de supervivencia (si aplica).
 ¿Cómo modificarías el servicio web que creaste para implementar evaluación en línea y que además permita ejecutar un algoritmo multiarmed bandit?
