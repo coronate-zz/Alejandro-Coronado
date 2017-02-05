@@ -20,7 +20,15 @@
 int main(int argc, char *argv[])
 {
   int ch;
+   		//printf("-------------------START DPPMAIN----------------- " );
+
   while ((ch = getc(stdin)) != EOF)
+  {
+  	//printf(" \n Stdin: %d   \n", ch );
     putc(ch, stdout);
+  }
+
+        //printf("-------------------END DPPMAIN-----------------  \n" );
+
   return 0;
 }

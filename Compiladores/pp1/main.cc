@@ -60,15 +60,26 @@ static void PrintOneToken(TokenType token, const char *text, YYSTYPE value,
  */
 int main(int argc, char *argv[])
 {
+    printf("\n------Iniciano Main -------" );
+
     ParseCommandLine(argc, argv);
     FILE *filtered = popen("./dpp", "r"); // start up the preprocessor
+    
+
     yyrestart(filtered); // tell lex to read from output of preprocessor
-  
+
+
     InitScanner();
+
+    //No se ha generado ningun TOKEN
     TokenType token;
     while ((token = (TokenType)yylex()) != 0) 
+        {
         PrintOneToken(token, yytext, yylval, yylloc);
+        }
+
     pclose(filtered);
     return (ReportError::NumErrors() == 0? 0 : -1);
+
 }
 
