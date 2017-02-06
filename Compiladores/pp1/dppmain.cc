@@ -3,9 +3,11 @@
  * This file defines the main() routine for the preprocessor, 
  * the filtering tool which runs before the compiler.
  */
- 
+#include <iostream>
 #include "scanner.h"
 #include <stdio.h>
+#include <map>
+using namespace std;
 
 /* Function: main()
  * ----------------
@@ -19,15 +21,13 @@
  */
 int main(int argc, char *argv[])
 {
-  int ch;
+  yylex();
    		//printf("-------------------START DPPMAIN----------------- " );
-
+  int ch;
   while ((ch = getc(stdin)) != EOF)
-  {
-  	//printf(" \n Stdin: %d   \n", ch );
-    putc(ch, stdout);
-  }
-
+   
+  putc(ch, stdout);
+  return 0;
         //printf("-------------------END DPPMAIN-----------------  \n" );
 
   return 0;
