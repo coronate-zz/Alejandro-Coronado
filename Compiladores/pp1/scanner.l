@@ -33,20 +33,20 @@ static void DoBeforeEachAction();
 #define YY_USER_ACTION DoBeforeEachAction();
 
 
+
 %}
 
 
 
-
+%x stringConstant
 
 %%             /* BEGIN RULES SECTION */
 
 
 
 
-[ ]+            {  }
-(\n)			{yylloc.last_line=yylloc.first_line;
-				 yylloc.first_line=yylloc.last_line+1;
+[ ]+            { ; }
+(\n)			{yylloc.first_line=yylloc.first_line+1;
 				 yylloc.last_column=0;}
 
 
@@ -86,7 +86,8 @@ static void DoBeforeEachAction();
 (\(|\))			{return yytext[0];}
 (\{|\})			{return yytext[0];}
 (\=)			{return yytext[0];}
-
+(\>)			{return yytext[0];}
+(\<)			{return yytext[0];}
 
 (">=")			{return T_GreaterEqual;}
 ("<=")			{return T_LessEqual;}
@@ -104,23 +105,26 @@ static void DoBeforeEachAction();
 ("true"|"false")								{yylval.boolConstant=(yytext[0] == 't' );
 				 	 							 return T_BoolConstant;}
 
-([0-9]+\.[0-9]*)(e|E)(+|)([0-9]+) 				{yylval.doubleConstant=atof(yytext);
-				 							 	 return T_DoubleConstant; }
-(("0X"|"0x")([0-9a-fA-F]+)+\.("0X"|"0x")([0-9a-fA-F]+)*)(e|E)(+|-)(("0X"|"0x")([0-9a-fA-F])+)+ 				{yylval.doubleConstant=atof(yytext);
+([0-9]+\.[0-9]*)E("+"|"-")([0-9]+) 				{yylval.doubleConstant=atof(yytext);
 				 							 	 return T_DoubleConstant; }
 
-(\-)?([0-9]+\.[0-9]*)							{yylval.doubleConstant=atof(yytext);
+
+([0-9]+\.[0-9]*)								{yylval.doubleConstant=atof(yytext);
 			 				 	 				return T_DoubleConstant;}
 
-(\".*\")										{yylval.stringConstant=yytext;
-			 				 	 				return T_StringConstant;}
 
 
-(\".*\n.*\")  									{ReportError::UntermString(NULL,yytext);}
 
+
+\"												{BEGIN(stringConstant);}
+
+<stringConstant>([A-Za-z][A-Za-z0-9_])			{strcpy(yylval.identifier, yytext);
+								 				return T_StringConstant;}
+
+<stringConstant>(\")							{BEGIN(INITIAL);}
 
 ([A-Za-z][A-Za-z0-9_]{0,30})					{strcpy(yylval.identifier, yytext);
-												 return T_Identifier;}
+												 				return T_Identifier;}	
 
 ([A-Za-z][A-Za-z0-9_]{32,})						{ReportError::LongIdentifier(NULL,"e");}
 

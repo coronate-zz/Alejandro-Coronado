@@ -1,5 +1,9 @@
 # define
 
+
+true 
+false
+true
 TRUE
 
 FALSE

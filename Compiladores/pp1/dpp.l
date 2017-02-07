@@ -3,8 +3,6 @@
 
 #include <map>
 using std::map;
-using std::pair;
-using std::make_pair;
 #include <string>
 using std::string;
 #include "errors.h"
@@ -17,18 +15,19 @@ using std::string;
 %%
 
 %{
-    int line_num = 1;
     std::map<std::string, std::string> mapaMacro;
 %}
 
-\n   ++line_num;
- 
-\"                 BEGIN(string_process);  
-<string_process>\n BEGIN(INITIAL);   ++line_num;
-<string_process>\" BEGIN(INITIAL);  
 
 
-\"#define" "[A-Z]+" "[^\n]* 
+"//"[^\n]*                            {;}
+"/*"                                  {BEGIN(iniciaComentario);}
+<iniciaComentario>[^*\n]*
+<iniciaComentario>[*]+[^*/\n]*
+<iniciaComentario>"*"+"/"             BEGIN(INITIAL);
+<iniciaComentario>"*"+"/"             BEGIN(INITIAL);
+
+
 #define" "[A-Z]+" "[^\n]*             {string stringText(yytext);
                                       int spacePos1 = stringText.find(" ");
                                       int spacePos2 = stringText.find(" ", spacePos1 + 1);
@@ -39,27 +38,21 @@ using std::string;
                                       }
 
 
-#define" "+[^\n]*                     {ReportError::InvalidDirective(line_num);}
+#define" "+[^\n]*                     {ReportError::UntermComment();}
 
 
 
-#[A-Z]+                                {auto replace_it = mapaMacro.find(yytext+1);
-                                        if(replace_it == mapaMacro.end())
-                                            ReportError::InvalidDirective(line_num);
+#[A-Z]+                                {if(mapaMacro.find(yytext+1)== mapaMacro.end())
+                                            ReportError::UntermComment();
                                         else
-                                            printf("%s", (*replace_it).second.c_str()); //Basta com imprimirlo para que se cambie el texto 
+                                            printf("%s", (*mapaMacro.find(yytext+1)).second.c_str()); //Basta com imprimirlo para que se cambie el texto 
                                         }   
 
 
 
-#[[:alpha:]]*                       {ReportError::InvalidDirective(line_num);}
 
 
 
-"//"[^\n]*                      {;}
-"/*"                            {BEGIN(iniciaComentario);}
-<iniciaComentario>[^*\n]*
-<iniciaComentario>[*]+[^*/\n]*
-<iniciaComentario>\n             ++line_num;
-<iniciaComentario>"*"+"/"      BEGIN(INITIAL);
+
 %%
+
