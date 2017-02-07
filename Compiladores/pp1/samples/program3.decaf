@@ -1,5 +1,8 @@
 /* This is just a simple program with objects */
 
+#define COUNT 3 + 10
+
+
 class Animal {
   int height;
   double weight;
@@ -20,4 +23,9 @@ void main() {
   betsy.Moo(); // Go, Betsy!
 }
 
+print COUNT
 
+
+#COUNT y algo mas de #COUNT
+
+x0aaa123e+x01356f

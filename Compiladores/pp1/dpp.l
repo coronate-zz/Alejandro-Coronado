@@ -1,6 +1,5 @@
 %{
 
-/* Code at top of file */
 
 #include <map>
 using std::map;
@@ -13,60 +12,54 @@ using std::string;
 
 %x string_process
 
-%x c_comment
+%x iniciaComentario
 
 %%
 
 %{
     int line_num = 1;
-    std::map<std::string, std::string> replace_map;
+    std::map<std::string, std::string> mapaMacro;
 %}
 
-    /* Universal rule to increment line count when a newline is encountered */
-\n ECHO; ++line_num;
+\n   ++line_num;
+ 
+\"                 BEGIN(string_process);  
+<string_process>\n BEGIN(INITIAL);   ++line_num;
+<string_process>\" BEGIN(INITIAL);  
 
-\"                 BEGIN(string_process); ECHO;
-<string_process>\n BEGIN(INITIAL); ECHO; ++line_num;
-<string_process>\" BEGIN(INITIAL); ECHO;
 
-#define" "[[:upper:]]+" "[^\n]*     { string defineXXX(yytext);
-                                      auto index1 = defineXXX.find(" ");
-                                      auto index2 = defineXXX.find(" ", index1 + 1);
-                                      string symbol = defineXXX.substr(index1 + 1, index2 - (index1+1));
-                                      string replacement = defineXXX.substr(index2 + 1);
+\"#define" "[A-Z]+" "[^\n]* 
+#define" "[A-Z]+" "[^\n]*             {string stringText(yytext);
+                                      int spacePos1 = stringText.find(" ");
+                                      int spacePos2 = stringText.find(" ", spacePos1 + 1);
+                                      string definition = stringText.substr(spacePos1 + 1, spacePos2 - (spacePos1+1));
+                                      string valAsigado = stringText.substr(spacePos2 + 1);
 
-                                      // printf("%s\n", defineXXX.c_str());
-                                      // printf("%lu %s\n", index1, symbol.c_str());
-                                      // printf("%lu %s\n", index2, replacement.c_str());
-
-                                      for(auto check_char : symbol)
-                                      {
-                                         if(! isupper(check_char))
-                                             ReportError::InvalidDirective(line_num);
+                                      mapaMacro.insert(make_pair(definition, valAsigado));
                                       }
 
-                                      replace_map.insert(make_pair(symbol, replacement));
-                                    }
 
-#define[[:space:]]+[^\n]*               {ReportError::InvalidDirective(line_num);}
+#define" "+[^\n]*                     {ReportError::InvalidDirective(line_num);}
 
 
 
-#[[:upper:]]+                           {auto replace_it = replace_map.find(yytext+1);
-                                        if(replace_it == replace_map.end())
+#[A-Z]+                                {auto replace_it = mapaMacro.find(yytext+1);
+                                        if(replace_it == mapaMacro.end())
                                             ReportError::InvalidDirective(line_num);
                                         else
-                                            printf("%s", (*replace_it).second.c_str());
+                                            printf("%s", (*replace_it).second.c_str()); //Basta com imprimirlo para que se cambie el texto 
                                         }   
 
-#[[:alpha:]]*                           {ReportError::InvalidDirective(line_num);}
+
+
+#[[:alpha:]]*                       {ReportError::InvalidDirective(line_num);}
 
 
 
-"//"[^\n]*
-"/*"                    BEGIN(c_comment);
-<c_comment>[^*\n]*
-<c_comment>[*]+[^*/\n]*
-<c_comment>\n           ECHO; ++line_num;
-<c_comment>"*"+"/"      BEGIN(INITIAL);
+"//"[^\n]*                      {;}
+"/*"                            {BEGIN(iniciaComentario);}
+<iniciaComentario>[^*\n]*
+<iniciaComentario>[*]+[^*/\n]*
+<iniciaComentario>\n             ++line_num;
+<iniciaComentario>"*"+"/"      BEGIN(INITIAL);
 %%

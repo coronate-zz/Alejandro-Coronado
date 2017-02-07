@@ -101,10 +101,12 @@ static void DoBeforeEachAction();
 ("0X"|"0x")([0-9a-fA-F]+)						{yylval.integerConstant=strtol(yytext, NULL, 16);
 				 							 	 return T_IntConstant;}	
 
-("TRUE"|"FALSE"|"True"|"False")					{yylval.boolConstant=(yytext[0] == 'T' );
+("true"|"false")								{yylval.boolConstant=(yytext[0] == 't' );
 				 	 							 return T_BoolConstant;}
 
-(\-)?([0-9]+\.[0-9]*)E[+-]([0-9]+) 				{yylval.doubleConstant=atof(yytext);
+([0-9]+\.[0-9]*)(e|E)(+|)([0-9]+) 				{yylval.doubleConstant=atof(yytext);
+				 							 	 return T_DoubleConstant; }
+(("0X"|"0x")([0-9a-fA-F]+)+\.("0X"|"0x")([0-9a-fA-F]+)*)(e|E)(+|-)(("0X"|"0x")([0-9a-fA-F])+)+ 				{yylval.doubleConstant=atof(yytext);
 				 							 	 return T_DoubleConstant; }
 
 (\-)?([0-9]+\.[0-9]*)							{yylval.doubleConstant=atof(yytext);
@@ -117,7 +119,7 @@ static void DoBeforeEachAction();
 (\".*\n.*\")  									{ReportError::UntermString(NULL,yytext);}
 
 
-([A-Za-z][A-Za-z0-9_]{1,30})					{strcpy(yylval.identifier, yytext);
+([A-Za-z][A-Za-z0-9_]{0,30})					{strcpy(yylval.identifier, yytext);
 												 return T_Identifier;}
 
 ([A-Za-z][A-Za-z0-9_]{32,})						{ReportError::LongIdentifier(NULL,"e");}
